@@ -1,13 +1,12 @@
 package com.kreditcart.observability.logging;
 
-import com.kreditcart.observability.utils.ObservabilityConstants;
+import com.kreditcart.observability.utils.TraceContextHelper;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.MDC;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -35,16 +34,16 @@ public class LogCorrelationFilter extends OncePerRequestFilter {
             }
 
             // 2. Put into MDC
-            MDC.put(ObservabilityConstants.TRACE_ID, traceId);
-            MDC.put(ObservabilityConstants.SPAN_ID, spanId);
-            MDC.put(ObservabilityConstants.REQUEST_ID, UUID.randomUUID().toString());
+            TraceContextHelper.setTraceId(traceId);
+            TraceContextHelper.setSpanId(spanId);
+            TraceContextHelper.setRequestId(UUID.randomUUID().toString());
 
             // 3. continue chain
             filterChain.doFilter(request, response);
 
         }finally {
             // 5. cleanup
-            MDC.clear();
+            TraceContextHelper.clear();
         }
     }
 }
